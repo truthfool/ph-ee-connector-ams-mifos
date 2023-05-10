@@ -100,8 +100,8 @@ public class ZeebeeWorkers {
     @Value("${ams.local.enabled:false}")
     private boolean isAmsLocalEnabled;
 
-    @Value("#{'${dfspids}'.split(',')}")
-    private List<String> dfspids;
+    @Value("#{'${accountHoldingInstitutionIds}'.split(',')}")
+    private List<String> ahhIds;
 
     @Value("${zeebe.client.evenly-allocated-max-jobs}")
     private int workerMaxJobs;
@@ -219,11 +219,11 @@ public class ZeebeeWorkers {
                     .maxJobsActive(workerMaxJobs)
                     .open();
 
-            for (String dfspid : dfspids) {
-                logger.info("DFSPID {}", dfspid);
-                logger.info("## generating " + WORKER_PAYER_LOCAL_QUOTE + "{} worker", dfspid);
+            for (String ahhId : ahhIds) {
+                logger.info("DFSPID {}", ahhId);
+                logger.info("## generating " + WORKER_PAYER_LOCAL_QUOTE + "{} worker", ahhId);
                 zeebeClient.newWorker()
-                        .jobType(WORKER_PAYER_LOCAL_QUOTE + dfspid)
+                        .jobType(WORKER_PAYER_LOCAL_QUOTE + ahhId)
                         .handler((client, job) -> {
                             logWorkerDetails(job);
                             if (isAmsLocalEnabled) {
@@ -251,13 +251,13 @@ public class ZeebeeWorkers {
                                 ;
                             }
                         })
-                        .name(WORKER_PAYER_LOCAL_QUOTE + dfspid)
+                        .name(WORKER_PAYER_LOCAL_QUOTE + ahhId)
                         .maxJobsActive(workerMaxJobs)
                         .open();
 
-                logger.info("## generating " + WORKER_PAYEE_QUOTE + "{} worker", dfspid);
+                logger.info("## generating " + WORKER_PAYEE_QUOTE + "{} worker", ahhId);
                 zeebeClient.newWorker()
-                        .jobType(WORKER_PAYEE_QUOTE + dfspid)
+                        .jobType(WORKER_PAYEE_QUOTE + ahhId)
                         .handler((client, job) -> {
                             logWorkerDetails(job);
                             Map<String, Object> existingVariables = job.getVariablesAsMap();
@@ -294,13 +294,13 @@ public class ZeebeeWorkers {
                                 ;
                             }
                         })
-                        .name(WORKER_PAYEE_QUOTE + dfspid)
+                        .name(WORKER_PAYEE_QUOTE + ahhId)
                         .maxJobsActive(workerMaxJobs)
                         .open();
 
-                logger.info("## generating " + WORKER_PAYEE_COMMIT_TRANSFER + "{} worker", dfspid);
+                logger.info("## generating " + WORKER_PAYEE_COMMIT_TRANSFER + "{} worker", ahhId);
                 zeebeClient.newWorker()
-                        .jobType(WORKER_PAYEE_COMMIT_TRANSFER + dfspid)
+                        .jobType(WORKER_PAYEE_COMMIT_TRANSFER + ahhId)
                         .handler((client, job) -> {
                             logWorkerDetails(job);
                             if (isAmsLocalEnabled) {
@@ -344,13 +344,13 @@ public class ZeebeeWorkers {
                                 ;
                             }
                         })
-                        .name(WORKER_PAYEE_COMMIT_TRANSFER + dfspid)
+                        .name(WORKER_PAYEE_COMMIT_TRANSFER + ahhId)
                         .maxJobsActive(workerMaxJobs)
                         .open();
 
-                logger.info("## generating " + WORKER_PARTY_LOOKUP_LOCAL + "{} worker", dfspid);
+                logger.info("## generating " + WORKER_PARTY_LOOKUP_LOCAL + "{} worker", ahhId);
                 zeebeClient.newWorker()
-                        .jobType(WORKER_PARTY_LOOKUP_LOCAL + dfspid)
+                        .jobType(WORKER_PARTY_LOOKUP_LOCAL + ahhId)
                         .handler((client, job) -> {
                             logWorkerDetails(job);
                             Map<String, Object> existingVariables = job.getVariablesAsMap();
@@ -362,7 +362,7 @@ public class ZeebeeWorkers {
                                 ex.setProperty(PARTY_ID_TYPE, partyIdType);
                                 ex.setProperty(PARTY_ID, partyId);
                                 ex.setProperty(ZEEBE_JOB_KEY, job.getKey());
-                                if (dfspid.equalsIgnoreCase(existingVariables.get("payeeTenantId").toString())) {
+                                if (ahhId.equalsIgnoreCase(existingVariables.get("payeeTenantId").toString())) {
                                     ex.setProperty(TENANT_ID, existingVariables.get("payeeTenantId"));
                                 } else {
                                     ex.setProperty(TENANT_ID, tenantId);
@@ -401,13 +401,13 @@ public class ZeebeeWorkers {
                                 ;
                             }
                         })
-                        .name(WORKER_PARTY_LOOKUP_LOCAL + dfspid)
+                        .name(WORKER_PARTY_LOOKUP_LOCAL + ahhId)
                         .maxJobsActive(workerMaxJobs)
                         .open();
 
-                logger.info("## generating " + WORKER_INTEROP_PARTY_REGISTRATION + "{} worker", dfspid);
+                logger.info("## generating " + WORKER_INTEROP_PARTY_REGISTRATION + "{} worker", ahhId);
                 zeebeClient.newWorker()
-                        .jobType(WORKER_INTEROP_PARTY_REGISTRATION + dfspid)
+                        .jobType(WORKER_INTEROP_PARTY_REGISTRATION + ahhId)
                         .handler((client, job) -> {
                             logWorkerDetails(job);
                             Map<String, Object> existingVariables = job.getVariablesAsMap();
@@ -440,13 +440,13 @@ public class ZeebeeWorkers {
                                 ;
                             }
                         })
-                        .name(WORKER_INTEROP_PARTY_REGISTRATION + dfspid)
+                        .name(WORKER_INTEROP_PARTY_REGISTRATION + ahhId)
                         .maxJobsActive(workerMaxJobs)
                         .open();
 
-                logger.info("## generating " + WORKER_PAYEE_DEPOSIT_TRANSFER + "{} worker", dfspid);
+                logger.info("## generating " + WORKER_PAYEE_DEPOSIT_TRANSFER + "{} worker", ahhId);
                 zeebeClient.newWorker()
-                        .jobType(WORKER_PAYEE_DEPOSIT_TRANSFER + dfspid)
+                        .jobType(WORKER_PAYEE_DEPOSIT_TRANSFER + ahhId)
                         .handler((client, job) -> {
                             logWorkerDetails(job);
                             Map<String, Object> existingVariables = job.getVariablesAsMap();
@@ -502,13 +502,13 @@ public class ZeebeeWorkers {
                                         .send();
                             }
                         })
-                        .name(WORKER_PAYEE_DEPOSIT_TRANSFER + dfspid)
+                        .name(WORKER_PAYEE_DEPOSIT_TRANSFER + ahhId)
                         .maxJobsActive(workerMaxJobs)
                         .open();
 
-                logger.info("## generating {}" + "{} worker",WORKER_PAYEE_LOAN_TRANSFER, dfspid);
+                logger.info("## generating {}" + "{} worker",WORKER_PAYEE_LOAN_TRANSFER, ahhId);
                 zeebeClient.newWorker()
-                        .jobType(WORKER_PAYEE_LOAN_TRANSFER + dfspid)
+                        .jobType(WORKER_PAYEE_LOAN_TRANSFER + ahhId)
                         .handler((client, job) -> {
                             logWorkerDetails(job);
                             Map<String, Object> existingVariables = job.getVariablesAsMap();
@@ -550,13 +550,13 @@ public class ZeebeeWorkers {
                                         .send();
                             }
                         })
-                        .name(WORKER_PAYEE_LOAN_TRANSFER + dfspid)
+                        .name(WORKER_PAYEE_LOAN_TRANSFER + ahhId)
                         .maxJobsActive(workerMaxJobs)
                         .open();
 
-                logger.info("## generating " + WORKER_ACCOUNT_IDENTIFIER + "{} worker", dfspid);
+                logger.info("## generating " + WORKER_ACCOUNT_IDENTIFIER + "{} worker", ahhId);
                 zeebeClient.newWorker()
-                        .jobType(WORKER_ACCOUNT_IDENTIFIER + dfspid)
+                        .jobType(WORKER_ACCOUNT_IDENTIFIER + ahhId)
                         .handler((client, job) -> {
                             logWorkerDetails(job);
                             Map<String, Object> existingVariables = job.getVariablesAsMap();
@@ -586,7 +586,7 @@ public class ZeebeeWorkers {
                                         .send();
                             }
                         })
-                        .name(WORKER_ACCOUNT_IDENTIFIER + dfspid)
+                        .name(WORKER_ACCOUNT_IDENTIFIER + ahhId)
                         .maxJobsActive(workerMaxJobs)
                         .open();
             }
